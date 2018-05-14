@@ -14,15 +14,19 @@ class TasksController extends Controller
     public function index()
     {
         $data = [];
-        $user = \Auth::user();
-        $tasks = Task::all();
+        if(\Auth::check()){
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->get();
+            
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+                ];
+            return view('tasks.index', $data);
+        }else{
+            return view('tasks.index');
+        }
         
-        $data = [
-            'user' => $user,
-            'tasks' => $tasks,
-            ];
-        
-        return view('tasks.index', $data);
     }
 
     
@@ -70,9 +74,13 @@ class TasksController extends Controller
     {
         $task = Task::find($id);
         
-        return view('tasks.edit', [
+        if(\Auth::user()->id === $task->user_id){
+            return view('tasks.edit', [
                 'task' => $task,
-            ]);
+            ]);   
+        }else{
+            return redirect('/');
+        }
     }
 
     
